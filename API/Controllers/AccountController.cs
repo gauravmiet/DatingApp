@@ -38,7 +38,11 @@ namespace API.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             // return user;
-            return new UserDto{Username=user.UserName,Token=_TokenService.CreateToken(user)};
+            return new UserDto
+            {
+              Username=user.UserName,
+              Token=_TokenService.CreateToken(user)
+            };
         }
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>>Login(LoginDto loginDto)
