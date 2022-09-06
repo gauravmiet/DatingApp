@@ -24,8 +24,7 @@ currentUser$=this.currentUserSource.asObservable();
         const user=response;
         if(user)
         {
-          localStorage.setItem('user',JSON.stringify(user));
-          this.currentUserSource.next(user);
+          this.setCurrentUser(user);
         }
       })
     );
@@ -37,8 +36,7 @@ map(
   (user:User)=>{
     if(user)
     {
-      localStorage.setItem('user',JSON.stringify(user));
-      this.currentUserSource.next(user);
+     this.setCurrentUser(user);
     }
   }
 )
@@ -47,8 +45,8 @@ map(
   }
   setCurrentUser(user:User)
   {
+    localStorage.setItem('user',JSON.stringify(user));
     this.currentUserSource.next(user);
-
   }
 
   logout()
