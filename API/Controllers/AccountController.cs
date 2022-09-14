@@ -10,6 +10,7 @@ using API.Entities;
 using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace API.Controllers
 {
@@ -17,8 +18,10 @@ namespace API.Controllers
     {
         private readonly DataContext _context;
         private readonly ITokenService _TokenService;
-        public AccountController(DataContext context,ITokenService TokenService)
+        private readonly IMapper _mapper;
+        public AccountController(DataContext context,ITokenService TokenService,IMapper mapper )
         {
+            _mapper = mapper;
             _TokenService = TokenService;
             _context = context;
 
@@ -28,20 +31,22 @@ namespace API.Controllers
         {
             if(await UserExist(registerDto.Username)) 
                return BadRequest("User is taken");
+            var user=_mapper.Map<AppUser>(registerDto);
+
             using var hmac=new HMACSHA512();
-            var user =new AppUser()
-            {
-                UserName=registerDto.Username,
-                PasswordHash=hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-                PasswordSalt=hmac.Key
-            };
+          
+            user.UserName=registerDto.Username;
+            user.PasswordHash=hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
+            user.PasswordSalt=hmac.Key;
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             // return user;
             return new UserDto
             {
               Username=user.UserName,
-              Token=_TokenService.CreateToken(user)
+              Token=_TokenService.CreateToken(user),
+              KnownAs=user.KnownAs
             };
         }
         [HttpPost("login")]
